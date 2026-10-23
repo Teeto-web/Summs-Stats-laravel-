@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
 # Composer (gestionnaire de dépendances PHP)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_HOME=/tmp/composer
+ENV XDG_CONFIG_HOME=/tmp/.config
 
 # Aligne l'utilisateur du conteneur sur le tien pour éviter les problèmes de droits sur les fichiers
 ARG UID=1000

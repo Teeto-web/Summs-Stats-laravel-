@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+   'riot' => [
+        'key' => env('RIOT_API_KEY'),
+        'region' => env('RIOT_REGION', 'europe'),
+        'platform' => env('RIOT_PLATFORM', 'euw1'),
+    ],
 ];
