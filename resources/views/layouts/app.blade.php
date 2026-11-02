@@ -27,6 +27,11 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        {{-- Erreur du formulaire de recherche, quelle que soit la page d'où il a été envoyé --}}
+        @error('riot_id')
+            <div class="alert alert-error">{{ $message }}</div>
+        @enderror
+
         @yield('content')
     </main>
 
