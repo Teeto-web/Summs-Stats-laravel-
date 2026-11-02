@@ -3,6 +3,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const list = document.getElementById('match-list');
+    const stats = document.getElementById('player-stats');
 
     // Rien à faire si aucun téléchargement n'est en cours
     if (!list || list.dataset.loading !== '1') {
@@ -24,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const data = await response.json();
                 list.innerHTML = data.html;
+
+                if (stats) {
+                    stats.innerHTML = data.statsHtml;
+                }
 
                 // Téléchargement terminé : on arrête
                 if (!data.loading) {

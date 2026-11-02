@@ -47,6 +47,15 @@
         @endforeach
     </section>
 
+    {{-- Statistiques --}}
+    <section class="card">
+        <h2>Statistiques</h2>
+
+        <div id="player-stats">
+            @include('players.partials.stats')
+        </div>
+    </section>
+
     {{-- Historique des parties --}}
     <section class="card">
         <h2>Historique des parties</h2>

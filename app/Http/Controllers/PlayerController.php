@@ -7,6 +7,7 @@ use App\Models\GameParticipant;
 use App\Models\Player;
 use App\Services\DataDragonService;
 use App\Services\PlayerService;
+use App\Services\PlayerStatsService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +21,7 @@ class PlayerController extends Controller
     public function __construct(
         private PlayerService $players,
         private DataDragonService $ddragon,
+        private PlayerStatsService $stats,
     ) {
     }
 
@@ -79,6 +81,7 @@ class PlayerController extends Controller
             'canRefresh' => $this->players->canRefresh($player),
             'participations' => $this->recentParticipations($player),
             'loadingMatches' => FetchPlayerMatches::isRunning($player->puuid),
+            'stats' => $this->stats->forPlayer($player),
         ]);
     }
 
@@ -96,6 +99,11 @@ class PlayerController extends Controller
                 'ddragon' => $this->ddragon,
                 'participations' => $this->recentParticipations($player),
                 'loadingMatches' => $loading,
+            ])->render(),
+            // Les statistiques évoluent aussi au fur et à mesure que les parties arrivent
+            'statsHtml' => view('players.partials.stats', [
+                'ddragon' => $this->ddragon,
+                'stats' => $this->stats->forPlayer($player),
             ])->render(),
         ]);
     }
