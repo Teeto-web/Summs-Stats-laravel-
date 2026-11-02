@@ -47,9 +47,29 @@
         @endforeach
     </section>
 
-    {{-- Prochaine étape --}}
+    {{-- Historique des parties --}}
     <section class="card">
         <h2>Historique des parties</h2>
-        <p class="muted">Bientôt disponible.</p>
+
+        {{-- data-* : informations lues par le JavaScript (public/js/player.js) --}}
+        <div
+            id="match-list"
+            data-loading="{{ $loadingMatches ? '1' : '0' }}"
+            data-poll-url="{{ route('players.matches', $player) }}"
+        >
+            @include('players.partials.match-list')
+        </div>
     </section>
+
+    @if ($loadingMatches)
+        {{-- Actualise la liste pendant le téléchargement, sans recharger la page --}}
+        @push('scripts')
+            <script src="{{ asset('js/player.js') }}" defer></script>
+        @endpush
+
+        {{-- Si JavaScript est désactivé : rechargement complet toutes les 5 secondes --}}
+        @push('head')
+            <noscript><meta http-equiv="refresh" content="5"></noscript>
+        @endpush
+    @endif
 @endsection

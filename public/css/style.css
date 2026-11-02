@@ -269,6 +269,102 @@ a {
 .tier-grandmaster { color: #e0525a; }
 .tier-challenger { color: #f2d27a; }
 
+/* ---------- Historique des parties ---------- */
+
+.loading {
+    color: var(--accent);
+    margin-bottom: 16px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% { opacity: 0.4; }
+}
+
+.match {
+    display: grid;
+    grid-template-columns: 130px 90px 100px 120px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-left: 4px solid;
+    border-radius: var(--radius);
+}
+
+.match-win {
+    border-color: #3d7be0;
+    background: rgba(61, 123, 224, 0.08);
+}
+
+.match-loss {
+    border-color: var(--error);
+    background: rgba(229, 72, 77, 0.08);
+}
+
+.match-queue {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.match-meta .muted {
+    font-size: 0.8rem;
+}
+
+.match-win .match-result { color: #6f9cf0; }
+.match-loss .match-result { color: var(--error); }
+
+.match-champion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.champion-icon {
+    border-radius: 50%;
+}
+
+.match-spells {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.match-spells img {
+    border-radius: 4px;
+}
+
+.kda-line {
+    font-weight: 700;
+}
+
+.kda-line .deaths {
+    color: var(--error);
+}
+
+.match-kda .muted,
+.match-stats {
+    font-size: 0.85rem;
+}
+
+.match-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.match-items img,
+.item-empty {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+}
+
+.item-empty {
+    display: inline-block;
+    background: var(--bg);
+}
+
 /* ---------- Pied de page ---------- */
 
 .footer {
@@ -304,5 +400,13 @@ a {
 
     .hero h1 {
         font-size: 2.2rem;
+    }
+
+    .match {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .match-items {
+        grid-column: 1 / -1;
     }
 }

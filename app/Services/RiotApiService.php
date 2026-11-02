@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 
@@ -95,6 +96,47 @@ class RiotApiService
         return $this->get($this->regionalUrl(), '/lol/match/v5/matches/' . $matchId);
     }
 
+    /**
+     * Télécharge plusieurs parties EN PARALLÈLE (toutes les requêtes partent en même temps).
+     * Retourne un tableau [identifiant de la partie => données, ou null si introuvable].
+     *
+     * En cas de limite atteinte (429) ou d'autre erreur, une exception est lancée.
+     */
+    public function getMatches(array $matchIds): array
+    {
+        $responses = Http::pool(function (Pool $pool) use ($matchIds) {
+            foreach ($matchIds as $matchId) {
+                $pool->as($matchId)
+                    ->baseUrl($this->regionalUrl())
+                    ->withHeaders(['X-Riot-Token' => $this->key])
+                    ->acceptJson()
+                    ->timeout(10)
+                    ->get('/lol/match/v5/matches/' . $matchId);
+            }
+        });
+
+        $matches = [];
+
+        foreach ($responses as $matchId => $response) {
+            // Erreur de connexion (serveur injoignable, délai dépassé...)
+            if ($response instanceof \Throwable) {
+                throw $response;
+            }
+
+            if ($response->status() === 404) {
+                $matches[$matchId] = null;
+                continue;
+            }
+
+            // Lance une RequestException pour toute autre erreur (dont 429)
+            $response->throw();
+
+            $matches[$matchId] = $response->json();
+        }
+
+        return $matches;
+    }
+
     /* ---------------------------------------------------------------
      | SPECTATOR-V5 : partie en cours
      * --------------------------------------------------------------- */
@@ -152,10 +194,13 @@ class RiotApiService
 
                     return max($retryAfter, 1) * 1000;
                 },
-                // On ne réessaie que si Riot répond 429 (trop de requêtes)
+                // On ne réessaie que si Riot répond 429 (trop de requêtes) avec une attente courte.
+                // Si l'attente est longue, l'exception remonte : le job de la file d'attente
+                // se remettra lui-même en attente (voir FetchPlayerMatches).
                 function (\Exception $exception) {
                     return $exception instanceof RequestException
-                        && $exception->response->status() === 429;
+                        && $exception->response->status() === 429
+                        && (int) $exception->response->header('Retry-After') <= 10;
                 }
             );
     }

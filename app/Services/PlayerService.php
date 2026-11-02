@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\FetchPlayerMatches;
 use App\Models\Player;
 use Illuminate\Support\Facades\DB;
 
@@ -107,7 +108,7 @@ class PlayerService
         $entries = $this->riot->getRankedEntriesByPuuid($account['puuid']);
 
         // Transaction : soit tout est enregistré, soit rien (pas de joueur sans son classement)
-        return DB::transaction(function () use ($account, $summoner, $entries) {
+        $player = DB::transaction(function () use ($account, $summoner, $entries) {
             // On cherche par puuid : si le joueur a changé de pseudo, on met à jour la même ligne
             $player = Player::updateOrCreate(
                 ['puuid' => $account['puuid']],
@@ -146,5 +147,11 @@ class PlayerService
 
             return $player;
         });
+
+        // Lance le téléchargement des parties en arrière-plan (file d'attente)
+        FetchPlayerMatches::markAsRunning($player->puuid);
+        FetchPlayerMatches::dispatch($player->puuid);
+
+        return $player;
     }
 }

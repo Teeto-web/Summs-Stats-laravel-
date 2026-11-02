@@ -16,22 +16,36 @@ class DataDragonService
     // Version utilisée seulement si Data Dragon ne répond pas
     private const FALLBACK_VERSION = '15.1.1';
 
+    // Quelques champions dont le nom dans l'API Match diffère du nom de l'image
+    private const CHAMPION_IMAGE_FIXES = [
+        'FiddleSticks' => 'Fiddlesticks',
+    ];
+
+    // Gardés en mémoire pendant la requête pour ne pas relire le cache à chaque image
+    private ?string $version = null;
+    private ?array $summonerSpells = null;
+
     /**
      * Dernière version du jeu (ex : 16.21.1), gardée en cache 24 h.
      */
     public function latestVersion(): string
     {
+        if ($this->version !== null) {
+            return $this->version;
+        }
+
         try {
-            return Cache::remember('ddragon.version', now()->addDay(), function () {
+            $this->version = Cache::remember('ddragon.version', now()->addDay(), function () {
                 $versions = Http::timeout(5)->get(self::BASE_URL . '/api/versions.json')->throw()->json();
 
                 return $versions[0];
             });
         } catch (\Throwable $e) {
             report($e);
-
-            return self::FALLBACK_VERSION;
+            $this->version = self::FALLBACK_VERSION;
         }
+
+        return $this->version;
     }
 
     /**
@@ -40,8 +54,79 @@ class DataDragonService
     public function profileIconUrl(?int $iconId): string
     {
         // 29 = icône par défaut de League of Legends
-        $iconId = $iconId ?? 29;
+        return $this->cdnUrl('profileicon/' . ($iconId ?? 29) . '.png');
+    }
 
-        return self::BASE_URL . '/cdn/' . $this->latestVersion() . '/img/profileicon/' . $iconId . '.png';
+    /**
+     * URL de l'image carrée d'un champion, à partir de son nom (ex : "Ahri").
+     */
+    public function championImageUrl(string $championName): string
+    {
+        $championName = self::CHAMPION_IMAGE_FIXES[$championName] ?? $championName;
+
+        return $this->cdnUrl('champion/' . $championName . '.png');
+    }
+
+    /**
+     * URL de l'image d'un objet.
+     */
+    public function itemImageUrl(int $itemId): string
+    {
+        return $this->cdnUrl('item/' . $itemId . '.png');
+    }
+
+    /**
+     * URL de l'image d'un sort d'invocateur, ou null si inconnu.
+     * L'API Match donne un numéro (4 = Flash), mais l'image porte un nom (SummonerFlash.png) :
+     * on récupère la correspondance dans le fichier summoner.json de Data Dragon.
+     */
+    public function summonerSpellImageUrl(int $spellId): ?string
+    {
+        $image = $this->summonerSpells()[$spellId] ?? null;
+
+        if ($image === null) {
+            return null;
+        }
+
+        return $this->cdnUrl('spell/' . $image);
+    }
+
+    /**
+     * Correspondance numéro du sort => nom de l'image, gardée en cache 24 h.
+     */
+    private function summonerSpells(): array
+    {
+        if ($this->summonerSpells !== null) {
+            return $this->summonerSpells;
+        }
+
+        $version = $this->latestVersion();
+
+        try {
+            $this->summonerSpells = Cache::remember('ddragon.spells.' . $version, now()->addDay(), function () use ($version) {
+                $json = Http::timeout(5)
+                    ->get(self::BASE_URL . '/cdn/' . $version . '/data/en_US/summoner.json')
+                    ->throw()
+                    ->json();
+
+                $spells = [];
+
+                foreach ($json['data'] as $spell) {
+                    $spells[(int) $spell['key']] = $spell['image']['full'];
+                }
+
+                return $spells;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            $this->summonerSpells = [];
+        }
+
+        return $this->summonerSpells;
+    }
+
+    private function cdnUrl(string $path): string
+    {
+        return self::BASE_URL . '/cdn/' . $this->latestVersion() . '/img/' . $path;
     }
 }

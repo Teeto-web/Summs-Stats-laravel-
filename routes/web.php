@@ -6,6 +6,14 @@ use Illuminate\Support\Facades\Route;
 // Page d'accueil avec le formulaire de recherche
 Route::view('/', 'home')->name('home');
 
+// Liste des parties en JSON, appelée en JavaScript pendant leur téléchargement.
+// Limite plus haute (120/min) car appelée toutes les 1,5 s, mais ne fait aucun appel à l'API Riot.
+// Déclarée AVANT /joueur/{riotId}, sinon cette route l'intercepterait.
+Route::get('/joueur/{player}/parties', [PlayerController::class, 'matches'])
+    ->whereNumber('player')
+    ->middleware('throttle:120,1')
+    ->name('players.matches');
+
 // "throttle:30,1" = 30 requêtes maximum par minute et par visiteur,
 // pour éviter qu'un visiteur épuise les limites de l'API Riot
 Route::middleware('throttle:30,1')->group(function () {

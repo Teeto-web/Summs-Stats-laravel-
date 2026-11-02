@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Summs Stats')</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    {{-- Les pages peuvent ajouter des balises ici avec @push('head') --}}
+    @stack('head')
 </head>
 <body>
     <header class="header">
@@ -45,5 +48,8 @@
             </p>
         </div>
     </footer>
+
+    {{-- Les pages peuvent ajouter leurs scripts ici avec @push('scripts') --}}
+    @stack('scripts')
 </body>
 </html>
