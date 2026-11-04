@@ -439,13 +439,38 @@ a {
     font-size: 0.85rem;
 }
 
-.match-items {
+/* Lien invisible qui rend toute la ligne cliquable */
+.match {
+    position: relative;
+}
+
+.match-link {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+}
+
+.match:hover {
+    filter: brightness(1.15);
+}
+
+.items {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
 }
 
-.match-items img,
+.spells {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.spells img {
+    border-radius: 4px;
+}
+
+.items img,
 .item-empty {
     width: 28px;
     height: 28px;
@@ -455,6 +480,118 @@ a {
 .item-empty {
     display: inline-block;
     background: var(--bg);
+}
+
+/* ---------- Détail d'une partie ---------- */
+
+.button-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.button-secondary:hover {
+    background: var(--border);
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.game-header h1 {
+    font-size: 1.5rem;
+}
+
+.team {
+    border-top: 4px solid;
+}
+
+.team-blue { border-top-color: #3d7be0; }
+.team-red { border-top-color: var(--error); }
+
+.team-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.team-header h2 {
+    margin-bottom: 0;
+    color: var(--text);
+}
+
+.participant {
+    display: grid;
+    grid-template-columns: 70px 1fr 120px 110px 150px auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+}
+
+.participant + .participant {
+    border-top: 1px solid var(--border);
+}
+
+/* Le joueur dont on vient */
+.participant-highlight {
+    background: rgba(200, 170, 110, 0.12);
+}
+
+.participant-champion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.participant-name {
+    min-width: 0;
+}
+
+.participant-name a {
+    font-weight: 600;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.participant-name a:hover {
+    color: var(--accent);
+}
+
+.participant-name .muted,
+.participant-kda .muted,
+.participant-stats {
+    font-size: 0.8rem;
+}
+
+.participant-damage progress {
+    width: 100%;
+    height: 6px;
+    border: none;
+    border-radius: 3px;
+    background: var(--bg);
+    appearance: none;
+    overflow: hidden;
+}
+
+.participant-damage progress::-webkit-progress-bar {
+    background: var(--bg);
+}
+
+.participant-damage progress::-webkit-progress-value {
+    background: var(--error);
+}
+
+.participant-damage progress::-moz-progress-bar {
+    background: var(--error);
 }
 
 /* ---------- Pied de page ---------- */
@@ -506,7 +643,26 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .match-items {
+    .match .items {
         grid-column: 1 / -1;
+    }
+
+    .participant {
+        grid-template-columns: 60px 1fr 1fr;
+    }
+
+    .participant-damage,
+    .participant-stats {
+        display: none;
+    }
+
+    .participant .items {
+        grid-column: 1 / -1;
+    }
+
+    .game-header,
+    .team-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

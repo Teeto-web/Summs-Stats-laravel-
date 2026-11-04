@@ -22,7 +22,19 @@ class Game extends Model
         700 => 'Clash',
         900 => 'ARURF',
         1700 => 'Arena',
+        1710 => 'Arena',
         1900 => 'URF',
+    ];
+
+    // Si le queueId est inconnu, on se rabat sur le nom de code du mode de jeu.
+    // Riot utilise des noms de code internes : "CHERRY" est le nom de code de l'Arena.
+    private const GAME_MODES = [
+        'CLASSIC' => 'Faille de l\'invocateur',
+        'ARAM' => 'ARAM',
+        'CHERRY' => 'Arena',
+        'URF' => 'URF',
+        'ONEFORALL' => 'Un pour tous',
+        'NEXUSBLITZ' => 'Nexus Blitz',
     ];
 
     protected $fillable = [
@@ -62,7 +74,17 @@ class Game extends Model
      */
     public function queueLabel(): string
     {
-        return self::QUEUES[$this->queue_id] ?? ucfirst(strtolower($this->game_mode));
+        return self::QUEUES[$this->queue_id]
+            ?? self::GAME_MODES[$this->game_mode]
+            ?? ucfirst(strtolower($this->game_mode));
+    }
+
+    /**
+     * Patch du jeu, ex : "16.21" (à partir de la version complète 16.21.123.4567)
+     */
+    public function patch(): string
+    {
+        return implode('.', array_slice(explode('.', $this->game_version), 0, 2));
     }
 
     /**

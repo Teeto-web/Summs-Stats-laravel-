@@ -1,10 +1,17 @@
 <?php
 
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\PlayerController;
 use Illuminate\Support\Facades\Route;
 
 // Page d'accueil avec le formulaire de recherche
 Route::view('/', 'home')->name('home');
+
+// Détail d'une partie, ex : /partie/EUW1_8018961103
+// {game:riot_match_id} : Laravel cherche directement la partie par cette colonne (sinon : erreur 404)
+Route::get('/partie/{game:riot_match_id}', [GameController::class, 'show'])
+    ->middleware('throttle:120,1')
+    ->name('games.show');
 
 // Liste des parties en JSON, appelée en JavaScript pendant leur téléchargement.
 // Limite plus haute (120/min) car appelée toutes les 1,5 s, mais ne fait aucun appel à l'API Riot.

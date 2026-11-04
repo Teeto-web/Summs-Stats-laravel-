@@ -23,14 +23,7 @@
             loading="lazy"
         >
 
-        <div class="match-spells">
-            @foreach ([$participant->summoner1_id, $participant->summoner2_id] as $spellId)
-                @php($spellUrl = $ddragon->summonerSpellImageUrl($spellId))
-                @if ($spellUrl)
-                    <img src="{{ $spellUrl }}" alt="Sort d'invocateur" width="24" height="24" loading="lazy">
-                @endif
-            @endforeach
-        </div>
+        @include('partials.summoner-spells')
     </div>
 
     <div class="match-kda">
@@ -45,14 +38,12 @@
         <p>Vision {{ $participant->vision_score }}</p>
     </div>
 
-    <div class="match-items">
-        @for ($slot = 0; $slot <= 6; $slot++)
-            @php($itemId = $participant->{'item' . $slot})
-            @if ($itemId)
-                <img src="{{ $ddragon->itemImageUrl($itemId) }}" alt="Objet {{ $itemId }}" width="28" height="28" loading="lazy">
-            @else
-                <span class="item-empty"></span>
-            @endif
-        @endfor
-    </div>
+    @include('partials.items')
+
+    {{-- Lien invisible qui couvre toute la ligne : un clic n'importe où ouvre le détail --}}
+    <a
+        href="{{ route('games.show', ['game' => $game->riot_match_id, 'joueur' => $participant->puuid]) }}"
+        class="match-link"
+        aria-label="Voir le détail de la partie"
+    ></a>
 </article>
